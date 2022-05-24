@@ -32,7 +32,7 @@ async def create_capture(capture: Capture, session: AsyncSession = Depends(get_s
     # image = await capture_dal.create_image(base64_img="hello==", date_created=datetime.today())
     # print(image.image_id)
     posted_capture = await capture_dal.create_capture(annotation=capture.annotation, coordinates=capture.coordinates,
-                                     date_created=datetime.today(), date_updated=datetime.today())
+                                                      date_created=datetime.today(), date_updated=datetime.today())
     # await captures.commit()
     await session.flush()
     capture.album_id = posted_capture.album_id
@@ -67,7 +67,7 @@ async def update_capture_by_id(capture_id: int, request: Request):
 
 
 @app.post("/captures/{album_id}/add_image")
-async def add_image_to_album(image: Image, album_id: int , session: AsyncSession = Depends(get_session)):
+async def add_image_to_album(image: Image, album_id: int, session: AsyncSession = Depends(get_session)) -> Image:
     image = CaptureImage(encoded=image.encoded, date_created=image.date_created)
     image_dal = CaptureImageDAL(session)
     album_dal = CaptureAlbumDAL(session)
@@ -90,6 +90,7 @@ async def delete_image_by_id(image_id: int):
         async with session.begin():
             image_dal = CaptureImageDAL(session)
             return await image_dal.delete_image(image_id)
+
 
 if __name__ == '__main__':
     # asyncio.run(async_main())

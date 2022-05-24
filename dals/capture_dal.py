@@ -56,7 +56,7 @@ class CaptureAlbumDAL:
         # https://docs.sqlalchemy.org/en/14/orm/basic_relationships.html#deleting-rows-from-the-many-to-many-table
         capture = await self.get_capture_by_id(capture_id)
         result = await self.db_session.delete(capture)
-        await self.db_session.commit()
+        await self.db_session.flush()
         if result is None:
             return True
 
