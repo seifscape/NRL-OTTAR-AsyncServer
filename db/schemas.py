@@ -6,9 +6,9 @@ from pydantic import BaseModel
 
 
 class Image(BaseModel):
-    date_created: datetime
-    image_id: int
+    image_id: Optional[int]
     encoded: str
+    date_created: datetime
 
     class Config:
         orm_mode = True
@@ -27,7 +27,7 @@ class Capture(BaseModel):
 
 class DetailedCapture(Capture):
     date_updated: datetime
-    images: Optional[List[Image]]
+    images: Optional[List[Image]] = None
 
     class Config:
         arbitrary_types_allowed = True
