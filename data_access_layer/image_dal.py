@@ -2,7 +2,7 @@ import base64
 from typing import Optional
 
 from sqlalchemy.ext.asyncio import AsyncSession
-from models import CaptureImage, CaptureAlbum
+from database.models import CaptureImage, CaptureAlbum
 from sqlalchemy import delete
 
 

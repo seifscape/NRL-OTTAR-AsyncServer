@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, ForeignKeyConstraint
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
-from database import Base
+from database.database import Base
 
 
 # https://stackoverflow.com/a/35787130 asyncio
@@ -36,7 +36,6 @@ class CaptureImageAlbums(Base):
     __tablename__ = 'capture_image_albums'
     album_id = Column(Integer, ForeignKey(CaptureAlbum.album_id), primary_key=True)
     image_id = Column(Integer, ForeignKey(CaptureImage.image_id), primary_key=True)
-    ForeignKeyConstraint(
-        ('album_id', 'image_id'),
-        ('capture_album.album_id', 'capture_image.image_id'),
-        onupdate="CASCADE", ondelete="CASCADE")
+    ForeignKeyConstraint(('album_id', 'image_id'),
+                         ('capture_album.album_id', 'capture_image.image_id'),
+                         onupdate="CASCADE", ondelete="CASCADE")
