@@ -1,12 +1,13 @@
 import uvicorn
-from fastapi import FastAPI, Request, Depends, HTTPException
-from fastapi.responses import JSONResponse
+from fastapi import FastAPI, Request, Depends
+from sqlalchemy import delete
 from sqlalchemy.ext.asyncio import AsyncSession
-from dals.capture_dal import CaptureAlbumDAL
-from dals.image_dal import CaptureImageDAL
-from db.database import get_session, async_session, init_db
-from db.models import CaptureAlbum, CaptureImage
-from db.schemas import *
+
+from capture_dal import CaptureAlbumDAL
+from image_dal import CaptureImageDAL
+from database import get_session, async_session, init_db
+from models import CaptureAlbum, CaptureImage
+from schemas import *
 
 # from sqlalchemy.ext.asyncio import async_session
 
@@ -71,9 +72,37 @@ async def add_image_to_album(image: Image, album_id: int, session: AsyncSession 
     image = CaptureImage(encoded=image.encoded, date_created=image.date_created)
     image_dal = CaptureImageDAL(session)
     album_dal = CaptureAlbumDAL(session)
-    await image_dal.create_image(image)
-    await album_dal.add_to_capture_image_album(image.image_id, album_id)
+    album = await album_dal.get_capture_by_id(album_id)
+    # https://stackoverflow.com/questions/50026672/sql-alchemy-how-to-insert-data-into-two-tables-and-reference-foreign-key
+    await image_dal.create_image(image, album)
+    # await album_dal.add_to_capture_image_album(image.image_id, album_id)
     return image
+
+
+@app.post("/captures/{album_id}/add_images")
+async def add_images_to_album(images: CreateImages, album_id: int,
+                              session: AsyncSession = Depends(get_session)):
+    image_dal = CaptureImageDAL(session)
+    album_dal = CaptureAlbumDAL(session)
+    list_of_images = []
+    album = await album_dal.get_capture_by_id(album_id)
+    for i in images.images:
+        capture_image = CaptureImage(encoded=i.encoded, date_created=i.date_created)
+        capture_image.image_album.append(album)
+        list_of_images.append(capture_image)
+
+    image_dal.db_session.add_all(list_of_images)
+    await image_dal.db_session.commit()
+    await image_dal.db_session.flush()
+
+
+@app.delete("/captures/{album_id}/remove_images")
+async def delete_images_from_album(images: DeleteImages,
+                                   session: AsyncSession = Depends(get_session)):
+    image_dal = CaptureImageDAL(session)
+    for i in images.image_ids:
+        result = await image_dal.delete_image(i)
+        print(result)
 
 
 @app.post("/images", response_model=Image)
@@ -85,11 +114,10 @@ async def add_image(image: Image, session: AsyncSession = Depends(get_session)) 
 
 
 @app.delete("/images/{image_id}")
-async def delete_image_by_id(image_id: int):
-    async with async_session() as session:
-        async with session.begin():
-            image_dal = CaptureImageDAL(session)
-            return await image_dal.delete_image(image_id)
+async def delete_image_by_id(image_id: int,
+                             session: AsyncSession = Depends(get_session)):
+    image_dal = CaptureImageDAL(session)
+    return await image_dal.delete_image(image_id)
 
 
 if __name__ == '__main__':

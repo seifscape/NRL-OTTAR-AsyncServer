@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import List, Optional
+from typing import List, Optional, Union
 from pydantic import BaseModel
 
 
@@ -12,6 +12,14 @@ class Image(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class DeleteImages(BaseModel):
+    image_ids: List[int]
+
+
+class CreateImages(BaseModel):
+    images: Union[List[Image], None] = None
 
 
 class Capture(BaseModel):
@@ -27,7 +35,7 @@ class Capture(BaseModel):
 
 class DetailedCapture(Capture):
     date_updated: datetime
-    images: Optional[List[Image]] = None
+    images: Union[Optional[List[Image]]] = None
 
     class Config:
         arbitrary_types_allowed = True
