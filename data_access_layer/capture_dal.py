@@ -7,18 +7,19 @@ from sqlalchemy.future import select
 from sqlalchemy.orm import selectinload
 
 from database.models import CaptureAlbum, CaptureImage, CaptureImageAlbums
+from database.schemas import Capture
 
 
 class CaptureAlbumDAL:
     def __init__(self, db_session: AsyncSession):
         self.db_session = db_session
 
-    async def create_image(self, base64_img: str, date_created: datetime) -> CaptureImage:
+    async def create_image(self, capture_image: CaptureImage) -> CaptureImage:
         date = datetime.datetime.now()
-        image = CaptureImage(encoded=base64_img, date_created=date)
-        self.db_session.add(image)
+        image = CaptureImage(encoded=capture_image.encoded, date_created=date)
+        self.db_session.add(capture_image)
         await self.db_session.commit()
-        await self.db_session.refresh(image)
+        await self.db_session.refresh(capture_image)
         # await self.db_session.flush()
         return image
 
@@ -31,15 +32,15 @@ class CaptureAlbumDAL:
 
         return capture_image_album
 
-    async def create_capture(self, annotation: str, coordinates: str, date_created: datetime,
-                             date_updated: datetime) -> CaptureAlbum:
+    async def create_capture(self, capture: Capture) -> CaptureAlbum:
         date = datetime.datetime.now()
-        new_capture = CaptureAlbum(annotation=annotation, coordinates=coordinates, date_created=date,
-                                   date_updated=date)
-
+        new_capture = CaptureAlbum(annotation=capture.annotation, coordinates=capture.coordinates,
+                                   date_created=capture.date_created, date_updated=capture.date_updated)
+        capture.date_created = date
         self.db_session.add(new_capture)
         await self.db_session.commit()
         await self.db_session.refresh(new_capture)
+        # https://docs.sqlalchemy.org/en/14/orm/session_api.html#sqlalchemy.orm.Session.flush
         # await self.db_session.flush()
         return new_capture
 
@@ -60,7 +61,10 @@ class CaptureAlbumDAL:
         if result is None:
             return True
 
-    async def update_capture_annotation(self, capture_id: int, update_annotation: str):
-        statement = update(CaptureAlbum).where(CaptureAlbum.album_id == capture_id).values(annotation=update_annotation)
+    async def update_capture(self, capture_id: int, **kwargs):
+        statement = update(CaptureAlbum)\
+            .where(CaptureAlbum.album_id == capture_id).\
+            values(**kwargs).\
+            execution_options(synchronize_session="fetch")
         await self.db_session.execute(statement)
         await self.db_session.commit()

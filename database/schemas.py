@@ -26,7 +26,8 @@ class Capture(BaseModel):
     album_id: Optional[int]
     annotation: str
     coordinates: str
-    date_created: datetime
+    date_created: Optional[datetime]
+    date_updated: Optional[datetime]
 
     class Config:
         arbitrary_types_allowed = True
@@ -34,7 +35,6 @@ class Capture(BaseModel):
 
 
 class DetailedCapture(Capture):
-    date_updated: datetime
     images: Union[Optional[List[Image]]] = None
 
     class Config:

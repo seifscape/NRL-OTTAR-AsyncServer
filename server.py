@@ -1,5 +1,5 @@
 import uvicorn
-from fastapi import FastAPI, Request, Depends
+from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from data_access_layer.capture_dal import CaptureAlbumDAL
@@ -7,6 +7,7 @@ from data_access_layer.image_dal import CaptureImageDAL
 from database.database import get_session, init_db
 from database.models import CaptureAlbum, CaptureImage
 from database.schemas import *
+
 app = FastAPI()
 
 
@@ -26,12 +27,9 @@ async def get_all_captures(session: AsyncSession = Depends(get_session)) -> dict
 @app.post("/captures")
 async def create_capture(capture: Capture, session: AsyncSession = Depends(get_session)):
     capture_dal = CaptureAlbumDAL(session)
-    # image = await capture_dal.create_image(base64_img="hello==", date_created=datetime.today())
-    # print(image.image_id)
-    posted_capture = await capture_dal.create_capture(annotation=capture.annotation, coordinates=capture.coordinates,
-                                                      date_created=datetime.today(), date_updated=datetime.today())
-    # await captures.commit()
-    await session.flush()
+    posted_capture = await capture_dal.create_capture(capture)
+    # https://docs.sqlalchemy.org/en/14/orm/session_api.html?highlight=flush#sqlalchemy.orm.session.Session.flush
+    # await capture_dal.db_session.flush()
     capture.album_id = posted_capture.album_id
     return capture
 
@@ -40,16 +38,18 @@ async def create_capture(capture: Capture, session: AsyncSession = Depends(get_s
 async def get_capture_by_id(capture_id: int, session: AsyncSession = Depends(get_session)) -> dict[str, CaptureAlbum]:
     capture_dal = CaptureAlbumDAL(session)
     capture = await capture_dal.get_capture_by_id(capture_id=capture_id)
+    if capture is None:
+        raise HTTPException(status_code=404, detail="Item not found")
     return capture
 
 
 @app.put("/captures/{capture_id}")
-async def update_capture_by_id(capture_id: int, request: Request,
+async def update_capture_by_id(capture: Capture, capture_id: int,
                                session: AsyncSession = Depends(get_session)):
     capture_dal = CaptureAlbumDAL(session)
-    annotation = await request.json()
-    return await capture_dal.update_capture_annotation(capture_id=capture_id,
-                                                       update_annotation=annotation['annotation'])
+    return await capture_dal.update_capture(capture_id,
+                                            annotation=capture.annotation,
+                                            date_updated=capture.date_updated)
 
 
 @app.delete("/captures/{capture_id}")
@@ -95,7 +95,7 @@ async def delete_images_from_album(images: DeleteImages,
         await image_dal.delete_image(i)
 
 
-@app.post("/images", response_model=Image)
+@app.post("/image", response_model=Image)
 async def add_image(image: Image, session: AsyncSession = Depends(get_session)) -> CaptureImage:
     image = CaptureImage(encoded=image.encoded, date_created=image.date_created)
     image_dal = CaptureImageDAL(session)

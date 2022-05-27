@@ -32,7 +32,7 @@ class CaptureImage(Base):
 
 
 class CaptureImageAlbums(Base):
-    """ middle table M:N """
+    """ A CaptureImageAlbums - middle table between images and albums middle (M:N) """
     __tablename__ = 'capture_image_albums'
     album_id = Column(Integer, ForeignKey(CaptureAlbum.album_id), primary_key=True)
     image_id = Column(Integer, ForeignKey(CaptureImage.image_id), primary_key=True)
