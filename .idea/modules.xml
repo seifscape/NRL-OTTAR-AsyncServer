@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/InspectorMinesAsyncServer.iml" filepath="$PROJECT_DIR$/.idea/InspectorMinesAsyncServer.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/OTTAR-AsyncServer.iml" filepath="$PROJECT_DIR$/.idea/OTTAR-AsyncServer.iml" />
     </modules>
   </component>
 </project>
