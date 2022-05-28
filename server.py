@@ -2,11 +2,11 @@ import uvicorn
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from data_access_layer.capture_dal import CaptureAlbumDAL
-from data_access_layer.image_dal import CaptureImageDAL
-from database.database import get_session, init_db
-from database.models import CaptureAlbum, CaptureImage
-from database.schemas import *
+from app.data_access_layer.capture_dal import CaptureAlbumDAL
+from app.data_access_layer.image_dal import CaptureImageDAL
+from app.database.database import get_session, init_db
+from app.database.models import CaptureAlbum, CaptureImage
+from app.database.schemas import *
 
 app = FastAPI()
 
@@ -24,7 +24,8 @@ async def get_all_captures(session: AsyncSession = Depends(get_session)) -> dict
     return {"captures": captures}
 
 
-@app.post("/captures")
+# https://fastapi.tiangolo.com/advanced/path-operation-advanced-configuration/#advanced-description-from-docstring
+@app.post("/captures", response_model=Capture)
 async def create_capture(capture: Capture, session: AsyncSession = Depends(get_session)):
     capture_dal = CaptureAlbumDAL(session)
     posted_capture = await capture_dal.create_capture(capture)

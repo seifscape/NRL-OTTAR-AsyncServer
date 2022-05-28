@@ -6,8 +6,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.orm import selectinload
 
-from database.models import CaptureAlbum, CaptureImage, CaptureImageAlbums
-from database.schemas import Capture
+from app.database.models import CaptureAlbum, CaptureImage, CaptureImageAlbums
+from app.database.schemas import Capture
 
 
 class CaptureAlbumDAL:

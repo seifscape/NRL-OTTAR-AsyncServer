@@ -26,8 +26,8 @@ class Capture(BaseModel):
     album_id: Optional[int]
     annotation: str
     coordinates: str
-    date_created: Optional[datetime]
-    date_updated: Optional[datetime]
+    date_created: datetime
+    date_updated: datetime
 
     class Config:
         arbitrary_types_allowed = True
