@@ -34,7 +34,7 @@ async def startup():
 
 @app.get("/captures", response_model=Captures)
 async def get_all_captures(session: AsyncSession = Depends(get_session),
-                           api_key: APIKey = Depends(get_api_key)) -> \
+                           _api_key: APIKey = Depends(get_api_key)) -> \
         dict[str, List[CaptureAlbum]]:
     capture_dal = CaptureAlbumDAL(session)
     captures = await capture_dal.get_all_captures()
@@ -44,7 +44,7 @@ async def get_all_captures(session: AsyncSession = Depends(get_session),
 # https://fastapi.tiangolo.com/advanced/path-operation-advanced-configuration/#advanced-description-from-docstring
 @app.post("/captures", response_model=Capture)
 async def create_capture(capture: Capture, session: AsyncSession = Depends(get_session),
-                         api_key: APIKey = Depends(get_api_key)):
+                         _api_key: APIKey = Depends(get_api_key)):
     capture_dal = CaptureAlbumDAL(session)
     posted_capture = await capture_dal.create_capture(capture)
     # https://docs.sqlalchemy.org/en/14/orm/session_api.html?highlight=flush#sqlalchemy.orm.session.Session.flush
@@ -55,7 +55,7 @@ async def create_capture(capture: Capture, session: AsyncSession = Depends(get_s
 
 @app.get("/captures/{capture_id}", response_model=DetailedCapture)
 async def get_capture_by_id(capture_id: int, session: AsyncSession = Depends(get_session),
-                            api_key: APIKey = Depends(get_api_key)) -> dict[str, CaptureAlbum]:
+                            _api_key: APIKey = Depends(get_api_key)) -> dict[str, CaptureAlbum]:
     capture_dal = CaptureAlbumDAL(session)
     capture = await capture_dal.get_capture_by_id(capture_id=capture_id)
     if capture is None:
@@ -66,7 +66,7 @@ async def get_capture_by_id(capture_id: int, session: AsyncSession = Depends(get
 @app.put("/captures/{capture_id}")
 async def update_capture_by_id(capture: Capture, capture_id: int,
                                session: AsyncSession = Depends(get_session),
-                               api_key: APIKey = Depends(get_api_key)):
+                               _api_key: APIKey = Depends(get_api_key)):
     capture_dal = CaptureAlbumDAL(session)
     return await capture_dal.update_capture(capture_id,
                                             annotation=capture.annotation,
@@ -76,7 +76,7 @@ async def update_capture_by_id(capture: Capture, capture_id: int,
 @app.delete("/captures/{capture_id}")
 async def delete_capture_by_id(capture_id: int,
                                session: AsyncSession = Depends(get_session),
-                               api_key: APIKey = Depends(get_api_key)):
+                               _api_key: APIKey = Depends(get_api_key)):
     capture_dal = CaptureAlbumDAL(session)
     return await capture_dal.delete_capture_by_id(capture_id=capture_id)
 
@@ -84,7 +84,7 @@ async def delete_capture_by_id(capture_id: int,
 @app.post("/captures/{album_id}/add_image")
 async def add_image_to_album(image: Image, album_id: int,
                              session: AsyncSession = Depends(get_session),
-                             api_key: APIKey = Depends(get_api_key)) -> Image:
+                             _api_key: APIKey = Depends(get_api_key)) -> Image:
     image = CaptureImage(encoded=image.encoded, date_created=image.date_created)
     image_dal = CaptureImageDAL(session)
     album_dal = CaptureAlbumDAL(session)
@@ -98,7 +98,7 @@ async def add_image_to_album(image: Image, album_id: int,
 @app.post("/captures/{album_id}/add_images")
 async def add_images_to_album(images: CreateImages, album_id: int,
                               session: AsyncSession = Depends(get_session),
-                              api_key: APIKey = Depends(get_api_key)):
+                              _api_key: APIKey = Depends(get_api_key)):
     image_dal = CaptureImageDAL(session)
     album_dal = CaptureAlbumDAL(session)
     list_of_images = []
@@ -116,7 +116,7 @@ async def add_images_to_album(images: CreateImages, album_id: int,
 @app.delete("/captures/{album_id}/remove_images")
 async def delete_images_from_album(images: DeleteImages,
                                    session: AsyncSession = Depends(get_session),
-                                   api_key: APIKey = Depends(get_api_key)):
+                                   _api_key: APIKey = Depends(get_api_key)):
     image_dal = CaptureImageDAL(session)
     for i in images.image_ids:
         await image_dal.delete_image(i)
@@ -125,7 +125,7 @@ async def delete_images_from_album(images: DeleteImages,
 @app.post("/image", response_model=Image)
 async def add_image(image: Image,
                     session: AsyncSession = Depends(get_session),
-                    api_key: APIKey = Depends(get_api_key)) -> CaptureImage:
+                    _api_key: APIKey = Depends(get_api_key)) -> CaptureImage:
     image = CaptureImage(encoded=image.encoded, date_created=image.date_created)
     image_dal = CaptureImageDAL(session)
     await image_dal.create_image(image)
@@ -135,7 +135,7 @@ async def add_image(image: Image,
 @app.delete("/images/{image_id}")
 async def delete_image_by_id(image_id: int,
                              session: AsyncSession = Depends(get_session),
-                             api_key: APIKey = Depends(get_api_key)):
+                             _api_key: APIKey = Depends(get_api_key)):
     image_dal = CaptureImageDAL(session)
     return await image_dal.delete_image(image_id)
 
