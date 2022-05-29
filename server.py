@@ -1,6 +1,8 @@
 import uvicorn
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, Security
+from fastapi.security.api_key import APIKeyHeader, APIKey
 from sqlalchemy.ext.asyncio import AsyncSession
+from starlette.status import HTTP_403_FORBIDDEN
 
 from app.data_access_layer.capture_dal import CaptureAlbumDAL
 from app.data_access_layer.image_dal import CaptureImageDAL
@@ -10,6 +12,19 @@ from app.database.schemas import *
 
 app = FastAPI()
 
+API_KEY = "nrl_ottar_2022"
+API_KEY_NAME = "Authorization"
+api_key_header = APIKeyHeader(name=API_KEY_NAME, auto_error=False)
+
+
+async def get_api_key(api_key_header: str = Security(api_key_header)):
+    if api_key_header == API_KEY:
+        return api_key_header
+    else:
+        raise HTTPException(
+            status_code=HTTP_403_FORBIDDEN, detail="Could not validate credentials"
+        )
+
 
 @app.on_event("startup")
 async def startup():
@@ -18,7 +33,9 @@ async def startup():
 
 
 @app.get("/captures", response_model=Captures)
-async def get_all_captures(session: AsyncSession = Depends(get_session)) -> dict[str, List[CaptureAlbum]]:
+async def get_all_captures(session: AsyncSession = Depends(get_session),
+                           api_key: APIKey = Depends(get_api_key)) -> \
+        dict[str, List[CaptureAlbum]]:
     capture_dal = CaptureAlbumDAL(session)
     captures = await capture_dal.get_all_captures()
     return {"captures": captures}
@@ -26,7 +43,8 @@ async def get_all_captures(session: AsyncSession = Depends(get_session)) -> dict
 
 # https://fastapi.tiangolo.com/advanced/path-operation-advanced-configuration/#advanced-description-from-docstring
 @app.post("/captures", response_model=Capture)
-async def create_capture(capture: Capture, session: AsyncSession = Depends(get_session)):
+async def create_capture(capture: Capture, session: AsyncSession = Depends(get_session),
+                         api_key: APIKey = Depends(get_api_key)):
     capture_dal = CaptureAlbumDAL(session)
     posted_capture = await capture_dal.create_capture(capture)
     # https://docs.sqlalchemy.org/en/14/orm/session_api.html?highlight=flush#sqlalchemy.orm.session.Session.flush
@@ -36,7 +54,8 @@ async def create_capture(capture: Capture, session: AsyncSession = Depends(get_s
 
 
 @app.get("/captures/{capture_id}", response_model=DetailedCapture)
-async def get_capture_by_id(capture_id: int, session: AsyncSession = Depends(get_session)) -> dict[str, CaptureAlbum]:
+async def get_capture_by_id(capture_id: int, session: AsyncSession = Depends(get_session),
+                            api_key: APIKey = Depends(get_api_key)) -> dict[str, CaptureAlbum]:
     capture_dal = CaptureAlbumDAL(session)
     capture = await capture_dal.get_capture_by_id(capture_id=capture_id)
     if capture is None:
@@ -46,7 +65,8 @@ async def get_capture_by_id(capture_id: int, session: AsyncSession = Depends(get
 
 @app.put("/captures/{capture_id}")
 async def update_capture_by_id(capture: Capture, capture_id: int,
-                               session: AsyncSession = Depends(get_session)):
+                               session: AsyncSession = Depends(get_session),
+                               api_key: APIKey = Depends(get_api_key)):
     capture_dal = CaptureAlbumDAL(session)
     return await capture_dal.update_capture(capture_id,
                                             annotation=capture.annotation,
@@ -54,13 +74,17 @@ async def update_capture_by_id(capture: Capture, capture_id: int,
 
 
 @app.delete("/captures/{capture_id}")
-async def delete_capture_by_id(capture_id: int, session: AsyncSession = Depends(get_session)):
+async def delete_capture_by_id(capture_id: int,
+                               session: AsyncSession = Depends(get_session),
+                               api_key: APIKey = Depends(get_api_key)):
     capture_dal = CaptureAlbumDAL(session)
     return await capture_dal.delete_capture_by_id(capture_id=capture_id)
 
 
 @app.post("/captures/{album_id}/add_image")
-async def add_image_to_album(image: Image, album_id: int, session: AsyncSession = Depends(get_session)) -> Image:
+async def add_image_to_album(image: Image, album_id: int,
+                             session: AsyncSession = Depends(get_session),
+                             api_key: APIKey = Depends(get_api_key)) -> Image:
     image = CaptureImage(encoded=image.encoded, date_created=image.date_created)
     image_dal = CaptureImageDAL(session)
     album_dal = CaptureAlbumDAL(session)
@@ -73,7 +97,8 @@ async def add_image_to_album(image: Image, album_id: int, session: AsyncSession 
 
 @app.post("/captures/{album_id}/add_images")
 async def add_images_to_album(images: CreateImages, album_id: int,
-                              session: AsyncSession = Depends(get_session)):
+                              session: AsyncSession = Depends(get_session),
+                              api_key: APIKey = Depends(get_api_key)):
     image_dal = CaptureImageDAL(session)
     album_dal = CaptureAlbumDAL(session)
     list_of_images = []
@@ -90,14 +115,17 @@ async def add_images_to_album(images: CreateImages, album_id: int,
 
 @app.delete("/captures/{album_id}/remove_images")
 async def delete_images_from_album(images: DeleteImages,
-                                   session: AsyncSession = Depends(get_session)):
+                                   session: AsyncSession = Depends(get_session),
+                                   api_key: APIKey = Depends(get_api_key)):
     image_dal = CaptureImageDAL(session)
     for i in images.image_ids:
         await image_dal.delete_image(i)
 
 
 @app.post("/image", response_model=Image)
-async def add_image(image: Image, session: AsyncSession = Depends(get_session)) -> CaptureImage:
+async def add_image(image: Image,
+                    session: AsyncSession = Depends(get_session),
+                    api_key: APIKey = Depends(get_api_key)) -> CaptureImage:
     image = CaptureImage(encoded=image.encoded, date_created=image.date_created)
     image_dal = CaptureImageDAL(session)
     await image_dal.create_image(image)
@@ -106,7 +134,8 @@ async def add_image(image: Image, session: AsyncSession = Depends(get_session)) 
 
 @app.delete("/images/{image_id}")
 async def delete_image_by_id(image_id: int,
-                             session: AsyncSession = Depends(get_session)):
+                             session: AsyncSession = Depends(get_session),
+                             api_key: APIKey = Depends(get_api_key)):
     image_dal = CaptureImageDAL(session)
     return await image_dal.delete_image(image_id)
 
