@@ -28,13 +28,6 @@ class Capture(BaseModel):
     coordinates: str
     date_created: datetime
     date_updated: datetime
-
-    class Config:
-        arbitrary_types_allowed = True
-        orm_mode = True
-
-
-class DetailedCapture(Capture):
     images: Union[Optional[List[Image]]] = None
 
     class Config:

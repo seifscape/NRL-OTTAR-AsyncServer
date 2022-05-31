@@ -32,7 +32,8 @@ async def startup():
     await init_db()
 
 
-@app.get("/captures", response_model=Captures)
+# https://github.com/tiangolo/fastapi/issues/2007#issuecomment-747828636
+@app.get("/captures", response_model=Captures, response_model_exclude={'captures': {'__all__': {'images'}}})
 async def get_all_captures(session: AsyncSession = Depends(get_session),
                            _api_key: APIKey = Depends(get_api_key)) -> \
         dict[str, List[CaptureAlbum]]:
@@ -42,7 +43,7 @@ async def get_all_captures(session: AsyncSession = Depends(get_session),
 
 
 # https://fastapi.tiangolo.com/advanced/path-operation-advanced-configuration/#advanced-description-from-docstring
-@app.post("/captures", response_model=Capture)
+@app.post("/capture", response_model=Capture)
 async def create_capture(capture: Capture, session: AsyncSession = Depends(get_session),
                          _api_key: APIKey = Depends(get_api_key)):
     capture_dal = CaptureAlbumDAL(session)
@@ -53,7 +54,7 @@ async def create_capture(capture: Capture, session: AsyncSession = Depends(get_s
     return capture
 
 
-@app.get("/captures/{capture_id}", response_model=DetailedCapture)
+@app.get("/captures/{capture_id}", response_model=Capture)
 async def get_capture_by_id(capture_id: int, session: AsyncSession = Depends(get_session),
                             _api_key: APIKey = Depends(get_api_key)) -> dict[str, CaptureAlbum]:
     capture_dal = CaptureAlbumDAL(session)
@@ -63,7 +64,7 @@ async def get_capture_by_id(capture_id: int, session: AsyncSession = Depends(get
     return capture
 
 
-@app.put("/captures/{capture_id}")
+@app.patch("/captures/{capture_id}")
 async def update_capture_by_id(capture: Capture, capture_id: int,
                                session: AsyncSession = Depends(get_session),
                                _api_key: APIKey = Depends(get_api_key)):

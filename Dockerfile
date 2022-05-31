@@ -1,5 +1,5 @@
-# 
-FROM python:3.9
+# https://nabajyotiborah.medium.com/fastapi-scalable-project-structure-with-docker-compose-45dc3a9fb4c6
+FROM python:3.10
 
 # 
 WORKDIR /code
