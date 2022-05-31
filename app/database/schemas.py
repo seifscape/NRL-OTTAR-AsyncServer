@@ -27,7 +27,7 @@ class Capture(BaseModel):
     annotation: str
     coordinates: str
     date_created: datetime
-    date_updated: datetime
+    date_updated: Optional[datetime]
     images: Union[Optional[List[Image]]] = None
 
     class Config:

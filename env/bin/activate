@@ -1,4 +1,3 @@
-
 # This file must be used with "source bin/activate" *from bash*
 # you cannot run it directly
 
@@ -39,7 +38,7 @@ deactivate () {
 # unset irrelevant variables
 deactivate nondestructive
 
-VIRTUAL_ENV="/Users/seifkobrosly/Development/ApptitudeLabs/Clients/NRL/InspectorMinesAsyncServer/env"
+VIRTUAL_ENV="/Users/seifkobrosly/Development/ApptitudeLabs/Clients/NRL/OTTAR-Project/Server/OTTAR-AsyncServer/env"
 export VIRTUAL_ENV
 
 _OLD_VIRTUAL_PATH="$PATH"
