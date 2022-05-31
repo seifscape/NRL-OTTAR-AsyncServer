@@ -10,7 +10,7 @@ CREATE SEQUENCE capture_album_seq;
 
 CREATE TABLE capture_album (
   album_id int check (album_id > 0) NOT NULL DEFAULT NEXTVAL ('capture_album_seq'),
-  coordinates point,
+  coordinates varchar(66) NOT NULL,
   annotation text,
   date_created timestamptz NOT NULL,
   date_updated timestamptz,

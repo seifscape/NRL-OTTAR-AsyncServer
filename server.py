@@ -51,7 +51,21 @@ async def create_capture(capture: Capture, session: AsyncSession = Depends(get_s
     # https://docs.sqlalchemy.org/en/14/orm/session_api.html?highlight=flush#sqlalchemy.orm.session.Session.flush
     # await capture_dal.db_session.flush()
     capture.album_id = posted_capture.album_id
-    return capture
+    if capture.images is not None:
+        album_dal = CaptureAlbumDAL(session)
+        image_dal = CaptureImageDAL(session)
+        album = await album_dal.get_capture_by_id(posted_capture.album_id)
+        list_of_images = []
+        for i in capture.images:
+            capture_image = CaptureImage(encoded=i.encoded, date_created=i.date_created)
+            capture_image.image_album.append(album)
+            list_of_images.append(capture_image)
+        image_dal.db_session.add_all(list_of_images)
+        await image_dal.db_session.commit()
+        await image_dal.db_session.flush()
+        return album
+    else:
+        return capture
 
 
 @app.get("/captures/{capture_id}", response_model=Capture)
