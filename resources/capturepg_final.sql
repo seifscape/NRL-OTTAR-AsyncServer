@@ -1,4 +1,4 @@
-SET timezone = 'America/New_York';
+SET timezone = 'UTC';
 
 -- ----------------------------
 -- Table structure for `capture_album`
@@ -10,10 +10,10 @@ CREATE SEQUENCE capture_album_seq;
 
 CREATE TABLE capture_album (
   album_id int check (album_id > 0) NOT NULL DEFAULT NEXTVAL ('capture_album_seq'),
-  coordinates varchar(255) NOT NULL,
+  coordinates point,
   annotation text,
   date_created timestamptz NOT NULL,
-  date_updated timestamptz NOT NULL,
+  date_updated timestamptz,
   PRIMARY KEY (album_id)
 ) ;
 
@@ -44,4 +44,5 @@ CREATE TABLE capture_image_albums (
   CONSTRAINT capture_image_albums_ibfk_2 FOREIGN KEY (image_id) REFERENCES capture_image (image_id) ON DELETE CASCADE ON UPDATE CASCADE
 ) ;
 
+DROP INDEX IF EXISTS image_id;
 CREATE INDEX image_id ON capture_image_albums (image_id);
