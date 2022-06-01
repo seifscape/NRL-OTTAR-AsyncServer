@@ -12,8 +12,8 @@ class CaptureAlbum(Base):
     album_id = Column(Integer, primary_key=True)
     annotation = Column(Text, nullable=True)
     coordinates = Column(String(100), nullable=False)
-    date_created = Column(DateTime(timezone=True), server_default=func.now())
-    date_updated = Column(DateTime(timezone=True), server_default=func.now())
+    date_created = Column(DateTime(timezone=True))
+    date_updated = Column(DateTime(timezone=True))
     images = relationship('CaptureImage', secondary='capture_image_albums',
                           lazy='subquery', back_populates='image_album', cascade="all, delete")
     __mapper_args__ = {"eager_defaults": True}

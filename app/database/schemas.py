@@ -1,5 +1,4 @@
 from __future__ import annotations
-
 from datetime import datetime
 from typing import List, Optional, Union
 from pydantic import BaseModel
@@ -8,7 +7,7 @@ from pydantic import BaseModel
 class Image(BaseModel):
     image_id: Optional[int]
     encoded: str
-    date_created: datetime
+    date_created: Optional[datetime]
 
     class Config:
         orm_mode = True
@@ -26,7 +25,7 @@ class Capture(BaseModel):
     album_id: Optional[int]
     annotation: str
     coordinates: str
-    date_created: datetime
+    date_created: Optional[datetime]
     date_updated: Optional[datetime]
     images: Union[Optional[List[Image]]] = None
 

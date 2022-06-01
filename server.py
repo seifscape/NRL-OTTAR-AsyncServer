@@ -47,8 +47,9 @@ async def get_all_captures(session: AsyncSession = Depends(get_session),
 async def create_capture(capture: Capture, session: AsyncSession = Depends(get_session),
                          _api_key: APIKey = Depends(get_api_key)):
     capture_dal = CaptureAlbumDAL(session)
+    # https://stackoverflow.com/questions/2150739/iso-time-iso-8601-in-python
+    capture.date_created = datetime.now().utcnow().replace(microsecond=0)
     posted_capture = await capture_dal.create_capture(capture)
-    # https://docs.sqlalchemy.org/en/14/orm/session_api.html?highlight=flush#sqlalchemy.orm.session.Session.flush
     # await capture_dal.db_session.flush()
     capture.album_id = posted_capture.album_id
     if capture.images is not None:
@@ -85,7 +86,7 @@ async def update_capture_by_id(capture: Capture, capture_id: int,
     capture_dal = CaptureAlbumDAL(session)
     return await capture_dal.update_capture(capture_id,
                                             annotation=capture.annotation,
-                                            date_updated=capture.date_updated)
+                                            date_updated=datetime.now().utcnow().replace(microsecond=0))
 
 
 @app.delete("/captures/{capture_id}")
@@ -100,10 +101,13 @@ async def delete_capture_by_id(capture_id: int,
 async def add_image_to_album(image: Image, album_id: int,
                              session: AsyncSession = Depends(get_session),
                              _api_key: APIKey = Depends(get_api_key)) -> Image:
+    if image.date_created is None:
+        image.date_created = datetime.now().utcnow().replace(microsecond=0)
     image = CaptureImage(encoded=image.encoded, date_created=image.date_created)
     image_dal = CaptureImageDAL(session)
     album_dal = CaptureAlbumDAL(session)
     album = await album_dal.get_capture_by_id(album_id)
+    album.date_updated = datetime.now().utcnow().replace(microsecond=0)
     # https://stackoverflow.com/questions/50026672/sql-alchemy-how-to-insert-data-into-two-tables-and-reference-foreign-key
     await image_dal.create_image(image, album)
     # await album_dal.add_to_capture_image_album(image.image_id, album_id)
@@ -118,21 +122,28 @@ async def add_images_to_album(images: CreateImages, album_id: int,
     album_dal = CaptureAlbumDAL(session)
     list_of_images = []
     album = await album_dal.get_capture_by_id(album_id)
+    album.date_updated = datetime.now().utcnow().replace(microsecond=0)
     for i in images.images:
+        if i.date_created is None:
+            i.date_created = datetime.now().utcnow().replace(microsecond=0)
         capture_image = CaptureImage(encoded=i.encoded, date_created=i.date_created)
         capture_image.image_album.append(album)
         list_of_images.append(capture_image)
 
     image_dal.db_session.add_all(list_of_images)
     await image_dal.db_session.commit()
-    await image_dal.db_session.flush()
+    # await image_dal.db_session.flush()
+    return images
 
 
 @app.delete("/captures/{album_id}/remove_images")
-async def delete_images_from_album(images: DeleteImages,
+async def delete_images_from_album(images: DeleteImages, album_id: int,
                                    session: AsyncSession = Depends(get_session),
                                    _api_key: APIKey = Depends(get_api_key)):
     image_dal = CaptureImageDAL(session)
+    album_dal = CaptureAlbumDAL(session)
+    album = await album_dal.get_capture_by_id(album_id)
+    album.date_updated = datetime.now().utcnow().replace(microsecond=0)
     for i in images.image_ids:
         await image_dal.delete_image(i)
 
