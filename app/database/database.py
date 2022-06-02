@@ -3,6 +3,9 @@ from sqlalchemy.ext.asyncio import create_async_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
+# (non-Docker) postgres
+# DATABASE_URL = "postgresql+asyncpg://postgres:postgres@localhost:5432/capture"
+
 DATABASE_URL = "postgresql+asyncpg://postgres:postgres@db:5432/capture"
 engine = create_async_engine(DATABASE_URL, future=True, echo=True)
 Base = declarative_base()
