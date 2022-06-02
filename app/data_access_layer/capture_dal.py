@@ -53,13 +53,13 @@ class CaptureAlbumDAL:
     async def get_capture_by_id(self, capture_id: int) -> CaptureAlbum:
         return await self.db_session.get(CaptureAlbum, capture_id)
 
-    async def delete_capture_by_id(self, capture_id: int) -> bool:
+    async def delete_capture_by_id(self, capture_id: int):
         # https://docs.sqlalchemy.org/en/14/orm/basic_relationships.html#deleting-rows-from-the-many-to-many-table
         capture = await self.get_capture_by_id(capture_id)
         result = await self.db_session.delete(capture)
+        await self.db_session.commit()
         await self.db_session.flush()
-        if result is None:
-            return True
+
 
     async def update_capture(self, capture_id: int, **kwargs):
         statement = update(CaptureAlbum)\
