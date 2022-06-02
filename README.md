@@ -5,7 +5,6 @@
 <li>PostgresSQL 14.3</li>
 <li>FastAPI</li>
 <li>Docker</li>
-<li>Docker</li>
 
 <h3>Docker</h3>
 $ docker-compose build <br>
