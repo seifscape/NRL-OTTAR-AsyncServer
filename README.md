@@ -17,11 +17,11 @@ $ docker-compose up -d <br>
  ⠿ Container pgadmin                  Running      0.0s
 ```
 
-<h3>Python3 env:</h3>
-cd <proj_dir><br> 
+<h3>Python3 ENV:</h3>
+cd proj_dir <br> 
 python3 -m venv env<br> 
 source env/bin/activate<br> 
-pip3 install -r requirements.txt<br> 
+pip3 install -r requirements.txt<br><br> 
 
-<h4>deactivate:<h4/> 
+<b>deactivate:</b><br> 
 source env/bin/activate
