@@ -168,4 +168,4 @@ async def delete_image_by_id(image_id: int,
 
 if __name__ == '__main__':
     # asyncio.run(async_main())
-    uvicorn.run("server:app", port=1111, host='127.0.0.1', reload=True)
+    uvicorn.run("app.server:app", port=1111, host='127.0.0.1', reload=True)
