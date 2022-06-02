@@ -9,6 +9,7 @@
 <h3>Docker</h3>
 $ docker-compose build <br>
 $ docker-compose up -d <br>
+
 ```
 [+] Running 3/3
  ⠿ Container ottar-asyncserver-db-1   Running                                                                                                                              0.0s
