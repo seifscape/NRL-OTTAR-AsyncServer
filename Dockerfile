@@ -12,6 +12,11 @@ ENV PYTHONUNBUFFERED 1
 # 
 COPY ./requirements.txt /code/requirements.txt
 
+#
+COPY ./start.sh /start.sh
+RUN chmod +x /start.sh
+
+
 # 
 RUN pip3 install --no-cache-dir --upgrade -r /code/requirements.txt
 
@@ -20,4 +25,4 @@ COPY ./app /code/app
 
 # 
 #CMD ["uvicorn", "server:app", "--host", "0.0.0.0", "--port", "8080"]
-EXPOSE 80
+#EXPOSE 80

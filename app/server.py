@@ -39,6 +39,9 @@ async def get_all_captures(session: AsyncSession = Depends(get_session),
         dict[str, List[CaptureAlbum]]:
     capture_dal = CaptureAlbumDAL(session)
     captures = await capture_dal.get_all_captures()
+    for i in captures:
+        if i.date_updated is not None:
+            i.date_updated = i.date_updated.replace(microsecond=0)
     return {"captures": captures}
 
 
@@ -74,6 +77,8 @@ async def get_capture_by_id(capture_id: int, session: AsyncSession = Depends(get
                             _api_key: APIKey = Depends(get_api_key)) -> dict[str, CaptureAlbum]:
     capture_dal = CaptureAlbumDAL(session)
     capture = await capture_dal.get_capture_by_id(capture_id=capture_id)
+    if capture.date_updated is not None:
+        capture.date_updated = capture.date_updated.replace(microsecond=0)
     if capture is None:
         raise HTTPException(status_code=404, detail="Item not found")
     return capture
