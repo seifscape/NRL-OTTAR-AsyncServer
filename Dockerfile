@@ -2,22 +2,22 @@
 FROM python:3.10-slim
 
 # 
-WORKDIR /code
+WORKDIR /app
 
 # set env variables
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
-
 # 
-COPY ./requirements.txt /code/requirements.txt
+COPY ./requirements.txt /app/requirements.txt
 
 #
-RUN pip3 install --no-cache-dir --upgrade -r /code/requirements.txt
+RUN pip3 install --no-cache-dir --upgrade -r /app/requirements.txt
 
 # 
-COPY ./app /code/app
+COPY ./app /app/app
 
-# 
-#CMD ["uvicorn", "server:app", "--host", "0.0.0.0", "--port", "8080"]
+#
 EXPOSE 80
+CMD ["uvicorn", "app.server:app", "--host", "0.0.0.0", "--port", "80"]
+
