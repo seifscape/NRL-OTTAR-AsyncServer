@@ -24,7 +24,7 @@ class CreateImages(BaseModel):
 class Capture(BaseModel):
     album_id: Optional[int]
     annotation: str
-    coordinates: str
+    coordinates: Optional[str]
     date_created: Optional[datetime]
     date_updated: Optional[datetime]
     images: Union[Optional[List[Image]]] = None
