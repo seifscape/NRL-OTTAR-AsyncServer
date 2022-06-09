@@ -50,23 +50,23 @@ async def get_all_captures(session: AsyncSession = Depends(get_session),
 async def create_capture(capture: Capture, session: AsyncSession = Depends(get_session),
                          _api_key: APIKey = Depends(get_api_key)):
     capture_dal = CaptureAlbumDAL(session)
-    image_dal = CaptureImageDAL(session)
     # https://stackoverflow.com/questions/2150739/iso-time-iso-8601-in-python
     capture.date_created = datetime.now().utcnow().replace(microsecond=0)
     posted_capture = await capture_dal.create_capture(capture)
     # await capture_dal.db_session.flush()
     capture.capture_id = posted_capture.capture_id
     if capture.images is not None:
-        capture = await capture_dal.get_capture_by_id(posted_capture.capture_id)
+        image_dal = CaptureImageDAL(session)
+        _capture = await capture_dal.get_capture_by_id(posted_capture.capture_id)
         list_of_images = []
         for i in capture.images:
             capture_image = CaptureImage(encoded=i.encoded, date_created=i.date_created)
-            capture_image.image_album.append(capture)
+            capture_image.image_album.append(_capture)
             list_of_images.append(capture_image)
         image_dal.db_session.add_all(list_of_images)
         await image_dal.db_session.commit()
         await image_dal.db_session.flush()
-        return capture
+        return _capture
     else:
         return capture
 
