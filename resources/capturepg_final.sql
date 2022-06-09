@@ -9,12 +9,12 @@ DROP SEQUENCE IF EXISTS capture_album_seq;
 CREATE SEQUENCE capture_album_seq;
 
 CREATE TABLE capture_album (
-  album_id int check (album_id > 0) NOT NULL DEFAULT NEXTVAL ('capture_album_seq'),
+  capture_id int check (capture_id > 0) NOT NULL DEFAULT NEXTVAL ('capture_album_seq'),
   coordinates varchar(66) NOT NULL,
   annotation text,
   date_created timestamptz NOT NULL,
   date_updated timestamptz,
-  PRIMARY KEY (album_id)
+  PRIMARY KEY (capture_id)
 ) ;
 
 -- ----------------------------
@@ -37,10 +37,10 @@ CREATE TABLE capture_image (
 -- ----------------------------
 DROP TABLE IF EXISTS capture_image_albums;
 CREATE TABLE capture_image_albums (
-  album_id int check (album_id > 0) NOT NULL,
+  capture_id int check (capture_id > 0) NOT NULL,
   image_id int check (image_id > 0) NOT NULL,
-  PRIMARY KEY (album_id,image_id),
-  CONSTRAINT capture_image_albums_ibfk_1 FOREIGN KEY (album_id) REFERENCES capture_album (album_id) ON DELETE CASCADE ON UPDATE CASCADE,
+  PRIMARY KEY (capture_id,image_id),
+  CONSTRAINT capture_image_albums_ibfk_1 FOREIGN KEY (capture_id) REFERENCES capture_album (capture_id) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT capture_image_albums_ibfk_2 FOREIGN KEY (image_id) REFERENCES capture_image (image_id) ON DELETE CASCADE ON UPDATE CASCADE
 ) ;
 

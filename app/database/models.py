@@ -9,7 +9,7 @@ from app.database.database import Base
 
 class CaptureAlbum(Base):
     __tablename__ = 'capture_album'
-    album_id = Column(Integer, primary_key=True)
+    capture_id = Column(Integer, primary_key=True)
     annotation = Column(Text, nullable=True)
     coordinates = Column(String(100), nullable=False)
     date_created = Column(DateTime(timezone=True))
@@ -34,8 +34,8 @@ class CaptureImage(Base):
 class CaptureImageAlbums(Base):
     """ A CaptureImageAlbums - middle table between images and albums middle (M:N) """
     __tablename__ = 'capture_image_albums'
-    album_id = Column(Integer, ForeignKey(CaptureAlbum.album_id), primary_key=True)
+    capture_id = Column(Integer, ForeignKey(CaptureAlbum.capture_id), primary_key=True)
     image_id = Column(Integer, ForeignKey(CaptureImage.image_id), primary_key=True)
-    ForeignKeyConstraint(('album_id', 'image_id'),
-                         ('capture_album.album_id', 'capture_image.image_id'),
+    ForeignKeyConstraint(('capture_id', 'image_id'),
+                         ('capture_album.capture_id', 'capture_image.image_id'),
                          onupdate="CASCADE", ondelete="CASCADE")

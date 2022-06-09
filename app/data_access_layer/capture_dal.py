@@ -23,9 +23,9 @@ class CaptureAlbumDAL:
         # await self.db_session.flush()
         return image
 
-    async def add_to_capture_image_album(self, image_id: int, album_id: int) -> CaptureImageAlbums:
+    async def add_to_capture_image_album(self, image_id: int, capture_id: int) -> CaptureImageAlbums:
         """Add image to capture_image_album table"""
-        capture_image_album = CaptureImageAlbums(album_id=album_id, image_id=image_id)
+        capture_image_album = CaptureImageAlbums(capture_id=capture_id, image_id=image_id)
         self.db_session.add(capture_image_album)
         await self.db_session.commit()
         await self.db_session.refresh(capture_image_album)
@@ -47,7 +47,7 @@ class CaptureAlbumDAL:
     async def get_all_captures(self) -> List[CaptureAlbum]:
         # https://stackoverflow.com/a/70105356
         query = await self.db_session.execute(
-            select(CaptureAlbum).order_by(CaptureAlbum.album_id).options(selectinload(CaptureAlbum.images)))
+            select(CaptureAlbum).order_by(CaptureAlbum.capture_id).options(selectinload(CaptureAlbum.images)))
         return query.scalars().all()
 
     async def get_capture_by_id(self, capture_id: int) -> CaptureAlbum:
@@ -63,7 +63,7 @@ class CaptureAlbumDAL:
 
     async def update_capture(self, capture_id: int, **kwargs):
         statement = update(CaptureAlbum)\
-            .where(CaptureAlbum.album_id == capture_id).\
+            .where(CaptureAlbum.capture_id == capture_id).\
             values(**kwargs).\
             execution_options(synchronize_session="fetch")
         await self.db_session.execute(statement)

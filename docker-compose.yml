@@ -15,8 +15,8 @@ services:
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_DB=capture
   api:
-    image: seifscape/ottar-asyncserver-api
-#    build: .
+#    image: seifscape/ottar-asyncserver-api
+    build: .
     command: "uvicorn app.server:app --host 0.0.0.0 --port 80 --reload"
     restart: always
     volumes:

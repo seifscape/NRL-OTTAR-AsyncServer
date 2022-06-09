@@ -22,7 +22,7 @@ class CreateImages(BaseModel):
 
 
 class Capture(BaseModel):
-    album_id: Optional[int]
+    capture_id: Optional[int]
     annotation: str
     coordinates: Optional[str]
     date_created: Optional[datetime]
