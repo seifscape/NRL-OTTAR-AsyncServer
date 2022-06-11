@@ -7,7 +7,7 @@ from sqlalchemy.future import select
 from sqlalchemy.orm import selectinload
 
 from app.database.models import CaptureAlbum, CaptureImage, CaptureImageAlbums
-from app.database.schemas import Capture
+from app.database.schemas import CreateAndUpdateCapture
 
 
 class CaptureAlbumDAL:
@@ -31,7 +31,7 @@ class CaptureAlbumDAL:
         await self.db_session.refresh(capture_image_album)
         return capture_image_album
 
-    async def create_capture(self, capture: Capture) -> CaptureAlbum:
+    async def create_capture(self, capture: CreateAndUpdateCapture) -> CaptureAlbum:
         date = datetime.datetime.now()
         new_capture = CaptureAlbum(annotation=capture.annotation, coordinates=capture.coordinates,
                                    date_created=capture.date_created, date_updated=capture.date_updated)

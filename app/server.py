@@ -47,7 +47,7 @@ async def get_all_captures(session: AsyncSession = Depends(get_session),
 
 # https://fastapi.tiangolo.com/advanced/path-operation-advanced-configuration/#advanced-description-from-docstring
 @app.post("/capture", response_model=Capture)
-async def create_capture(capture: Capture, session: AsyncSession = Depends(get_session),
+async def create_capture(capture: CreateAndUpdateCapture, session: AsyncSession = Depends(get_session),
                          _api_key: APIKey = Depends(get_api_key)):
     capture_dal = CaptureAlbumDAL(session)
     # https://stackoverflow.com/questions/2150739/iso-time-iso-8601-in-python
@@ -75,15 +75,15 @@ async def get_capture_by_id(capture_id: int, session: AsyncSession = Depends(get
                             _api_key: APIKey = Depends(get_api_key)) -> dict[str, CaptureAlbum]:
     capture_dal = CaptureAlbumDAL(session)
     capture = await capture_dal.get_capture_by_id(capture_id=capture_id)
-    if capture.date_updated is not None:
-        capture.date_updated = capture.date_updated.replace(microsecond=0)
     if capture is None:
         raise HTTPException(status_code=404, detail="Item not found")
+    if capture.date_updated is not None:
+        capture.date_updated = capture.date_updated.replace(microsecond=0)
     return capture
 
 
 @app.patch("/captures/{capture_id}", response_model=Capture)
-async def update_capture_by_id(capture: Capture, capture_id: int,
+async def update_capture_by_id(capture: CreateAndUpdateCapture, capture_id: int,
                                session: AsyncSession = Depends(get_session),
                                _api_key: APIKey = Depends(get_api_key)):
     capture_dal = CaptureAlbumDAL(session)
@@ -120,7 +120,7 @@ async def add_image_to_album(image: Image, capture_id: int,
     return _image
 
 
-@app.post("/captures/{capture_id}/add_images", response_model=CreateImages)
+@app.post("/captures/{capture_id}/add_images", response_model=CreateImages, response_model_exclude={'images': {'__all__': {'capture_id'}}})
 async def add_images_to_album(images: CreateImages, capture_id: int,
                               session: AsyncSession = Depends(get_session),
                               _api_key: APIKey = Depends(get_api_key)):
