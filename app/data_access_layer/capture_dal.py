@@ -29,7 +29,6 @@ class CaptureAlbumDAL:
         self.db_session.add(capture_image_album)
         await self.db_session.commit()
         await self.db_session.refresh(capture_image_album)
-
         return capture_image_album
 
     async def create_capture(self, capture: Capture) -> CaptureAlbum:
@@ -60,11 +59,10 @@ class CaptureAlbumDAL:
         await self.db_session.commit()
         await self.db_session.flush()
 
-
     async def update_capture(self, capture_id: int, **kwargs):
-        statement = update(CaptureAlbum)\
-            .where(CaptureAlbum.capture_id == capture_id).\
-            values(**kwargs).\
+        statement = update(CaptureAlbum) \
+            .where(CaptureAlbum.capture_id == capture_id). \
+            values(**kwargs). \
             execution_options(synchronize_session="fetch")
         await self.db_session.execute(statement)
         await self.db_session.commit()

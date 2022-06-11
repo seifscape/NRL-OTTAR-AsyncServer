@@ -5,20 +5,34 @@ from pydantic import BaseModel
 
 
 class Image(BaseModel):
-    image_id: Optional[int]
-    encoded: str
+    image_id: int
+    encoded:  str
     date_created: Optional[datetime]
 
     class Config:
         orm_mode = True
 
 
+class CreateImage(Image):
+    capture_id: Optional[int]
+    image_id: Optional[int]
+    encoded: str
+    date_created: Optional[datetime]
+
+
+class ImageDeletion(Image):
+    image_id: int
+    encoded:  Optional[str]
+    date_created: Optional[datetime]
+
+
 class DeleteImages(BaseModel):
+    # images: Union[List[ImageDeletion], None] = None
     image_ids: List[int]
 
 
 class CreateImages(BaseModel):
-    images: Union[List[Image], None] = None
+    images: Union[List[CreateImage], None] = None
 
 
 class Capture(BaseModel):

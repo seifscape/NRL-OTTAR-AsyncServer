@@ -53,7 +53,6 @@ async def create_capture(capture: Capture, session: AsyncSession = Depends(get_s
     # https://stackoverflow.com/questions/2150739/iso-time-iso-8601-in-python
     capture.date_created = datetime.now().utcnow().replace(microsecond=0)
     posted_capture = await capture_dal.create_capture(capture)
-    # await capture_dal.db_session.flush()
     capture.capture_id = posted_capture.capture_id
     if capture.images is not None:
         image_dal = CaptureImageDAL(session)
@@ -61,7 +60,7 @@ async def create_capture(capture: Capture, session: AsyncSession = Depends(get_s
         list_of_images = []
         for i in capture.images:
             capture_image = CaptureImage(encoded=i.encoded, date_created=i.date_created)
-            capture_image.image_album.append(_capture)
+            capture_image.capture_album.append(_capture)
             list_of_images.append(capture_image)
         image_dal.db_session.add_all(list_of_images)
         await image_dal.db_session.commit()
@@ -83,14 +82,16 @@ async def get_capture_by_id(capture_id: int, session: AsyncSession = Depends(get
     return capture
 
 
-@app.patch("/captures/{capture_id}")
+@app.patch("/captures/{capture_id}", response_model=Capture)
 async def update_capture_by_id(capture: Capture, capture_id: int,
                                session: AsyncSession = Depends(get_session),
                                _api_key: APIKey = Depends(get_api_key)):
     capture_dal = CaptureAlbumDAL(session)
-    return await capture_dal.update_capture(capture_id,
-                                            annotation=capture.annotation,
-                                            date_updated=datetime.now().utcnow().replace(microsecond=0))
+    await capture_dal.update_capture(capture_id,
+                                     annotation=capture.annotation,
+                                     date_updated=datetime.now().utcnow().replace(microsecond=0))
+    _capture = await capture_dal.get_capture_by_id(capture_id=capture_id)
+    return _capture
 
 
 @app.delete("/captures/{capture_id}")
@@ -98,27 +99,28 @@ async def delete_capture_by_id(capture_id: int,
                                session: AsyncSession = Depends(get_session),
                                _api_key: APIKey = Depends(get_api_key)):
     capture_dal = CaptureAlbumDAL(session)
-    return await capture_dal.delete_capture_by_id(capture_id=capture_id)
+    await capture_dal.delete_capture_by_id(capture_id=capture_id)
+    return
 
 
-@app.post("/captures/{capture_id}/add_image")
+@app.post("/captures/{capture_id}/add_image", response_model=CreateImage)
 async def add_image_to_album(image: Image, capture_id: int,
                              session: AsyncSession = Depends(get_session),
                              _api_key: APIKey = Depends(get_api_key)) -> Image:
     if image.date_created is None:
         image.date_created = datetime.now().utcnow().replace(microsecond=0)
-    image = CaptureImage(encoded=image.encoded, date_created=image.date_created)
+    _image = CaptureImage(encoded=image.encoded, date_created=image.date_created)
     image_dal = CaptureImageDAL(session)
     capture_dal = CaptureAlbumDAL(session)
     capture = await capture_dal.get_capture_by_id(capture_id)
     capture.date_updated = datetime.now().utcnow().replace(microsecond=0)
     # https://stackoverflow.com/questions/50026672/sql-alchemy-how-to-insert-data-into-two-tables-and-reference-foreign-key
-    await image_dal.create_image(image, capture)
+    await image_dal.create_image(_image, capture)
     # await capture_dal.add_to_capture_image_album(image.image_id, capture_id)
-    return image
+    return _image
 
 
-@app.post("/captures/{capture_id}/add_images")
+@app.post("/captures/{capture_id}/add_images", response_model=CreateImages)
 async def add_images_to_album(images: CreateImages, capture_id: int,
                               session: AsyncSession = Depends(get_session),
                               _api_key: APIKey = Depends(get_api_key)):
@@ -131,7 +133,7 @@ async def add_images_to_album(images: CreateImages, capture_id: int,
         if i.date_created is None:
             i.date_created = datetime.now().utcnow().replace(microsecond=0)
         capture_image = CaptureImage(encoded=i.encoded, date_created=i.date_created)
-        capture_image.image_album.append(capture)
+        capture_image.capture_album.append(capture)
         list_of_images.append(capture_image)
 
     image_dal.db_session.add_all(list_of_images)
@@ -150,16 +152,21 @@ async def delete_images_from_album(images: DeleteImages, capture_id: int,
     capture.date_updated = datetime.now().utcnow().replace(microsecond=0)
     for i in images.image_ids:
         await image_dal.delete_image(i)
+    return
 
 
 @app.post("/image", response_model=Image)
-async def add_image(image: Image,
+async def add_image(image: CreateImage,
                     session: AsyncSession = Depends(get_session),
-                    _api_key: APIKey = Depends(get_api_key)) -> CaptureImage:
-    image = CaptureImage(encoded=image.encoded, date_created=image.date_created)
+                    _api_key: APIKey = Depends(get_api_key)) -> Image:
+    _image = CaptureImage(encoded=image.encoded, date_created=image.date_created)
     image_dal = CaptureImageDAL(session)
-    await image_dal.create_image(image)
-    return image
+    if image.capture_id is None:
+        raise HTTPException(status_code=401, detail="Capture ID is required")
+    capture_dal = CaptureAlbumDAL(session)
+    capture_album = await capture_dal.get_capture_by_id(image.capture_id)
+    await image_dal.create_image(_image, capture_album=capture_album)
+    return _image
 
 
 @app.delete("/images/{image_id}")
@@ -167,7 +174,8 @@ async def delete_image_by_id(image_id: int,
                              session: AsyncSession = Depends(get_session),
                              _api_key: APIKey = Depends(get_api_key)):
     image_dal = CaptureImageDAL(session)
-    return await image_dal.delete_image(image_id)
+    await image_dal.delete_image(image_id)
+    return
 
 
 if __name__ == '__main__':
