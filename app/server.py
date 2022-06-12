@@ -53,7 +53,7 @@ async def create_capture(capture: CreateAndUpdateCapture, session: AsyncSession 
     # https://stackoverflow.com/questions/2150739/iso-time-iso-8601-in-python
     capture.date_created = datetime.now().utcnow().replace(microsecond=0)
     posted_capture = await capture_dal.create_capture(capture)
-    capture.capture_id = posted_capture.capture_id
+    # capture.capture_id = posted_capture.capture_id
     if capture.images is not None:
         image_dal = CaptureImageDAL(session)
         _capture = await capture_dal.get_capture_by_id(posted_capture.capture_id)
