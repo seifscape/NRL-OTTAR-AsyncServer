@@ -17,8 +17,8 @@ API_KEY_NAME = "Authorization"
 api_key_header = APIKeyHeader(name=API_KEY_NAME, auto_error=False)
 
 
-async def get_api_key(api_key_header: str = Security(api_key_header)):
-    if api_key_header == API_KEY:
+async def get_api_key(_api_key_header: str = Security(api_key_header)):
+    if _api_key_header == API_KEY:
         return api_key_header
     else:
         raise HTTPException(
@@ -67,7 +67,7 @@ async def create_capture(capture: CreateAndUpdateCapture, session: AsyncSession 
         await image_dal.db_session.flush()
         return _capture
     else:
-        return capture
+        return posted_capture
 
 
 @app.get("/captures/{capture_id}", response_model=Capture)
@@ -120,13 +120,15 @@ async def add_image_to_album(image: Image, capture_id: int,
     return _image
 
 
-@app.post("/captures/{capture_id}/add_images", response_model=CreateImages, response_model_exclude={'images': {'__all__': {'capture_id'}}})
+@app.post("/captures/{capture_id}/add_images", response_model=Images,
+          response_model_exclude={'images': {'__all__': {'capture_id'}}})
 async def add_images_to_album(images: CreateImages, capture_id: int,
                               session: AsyncSession = Depends(get_session),
-                              _api_key: APIKey = Depends(get_api_key)):
+                              _api_key: APIKey = Depends(get_api_key)) -> dict[str, List[Image]]:
+
     image_dal = CaptureImageDAL(session)
     capture_dal = CaptureAlbumDAL(session)
-    list_of_images = []
+    list_of_capture_images = []
     capture = await capture_dal.get_capture_by_id(capture_id)
     capture.date_updated = datetime.now().utcnow().replace(microsecond=0)
     for i in images.images:
@@ -134,12 +136,17 @@ async def add_images_to_album(images: CreateImages, capture_id: int,
             i.date_created = datetime.now().utcnow().replace(microsecond=0)
         capture_image = CaptureImage(encoded=i.encoded, date_created=i.date_created)
         capture_image.capture_album.append(capture)
+        list_of_capture_images.append(capture_image)
+
+    image_dal.db_session.add_all(list_of_capture_images)
+    await image_dal.db_session.commit()
+    await image_dal.db_session.flush()
+    list_of_images = []
+    for n in list_of_capture_images:
+        capture_image = Image(encoded=n.encoded, date_created=n.date_created, image_id=n.image_id)
         list_of_images.append(capture_image)
 
-    image_dal.db_session.add_all(list_of_images)
-    await image_dal.db_session.commit()
-    # await image_dal.db_session.flush()
-    return images
+    return {"images": list_of_images}
 
 
 @app.delete("/captures/{capture_id}/remove_images")
@@ -152,7 +159,7 @@ async def delete_images_from_album(images: DeleteImages, capture_id: int,
     capture.date_updated = datetime.now().utcnow().replace(microsecond=0)
     for i in images.image_ids:
         await image_dal.delete_image(i)
-    return
+    await image_dal.db_session.commit()
 
 
 @app.post("/image", response_model=Image)

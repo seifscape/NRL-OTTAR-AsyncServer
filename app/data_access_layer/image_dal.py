@@ -17,7 +17,7 @@ class CaptureImageDAL:
         return image
 
     async def delete_image(self, image_id):
-        statement = delete(CaptureImage).where(CaptureImage.image_id == image_id)
+        statement = delete(CaptureImage).where(CaptureImage.image_id == image_id).\
+            execution_options(synchronize_session="fetch")
         await self.db_session.execute(statement)
-        await self.db_session.commit()
-        await self.db_session.flush()
+

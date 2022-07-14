@@ -32,15 +32,15 @@ class CaptureAlbumDAL:
         return capture_image_album
 
     async def create_capture(self, capture: CreateAndUpdateCapture) -> CaptureAlbum:
-        date = datetime.datetime.now()
+        # date = datetime.datetime.now()
+        # capture.date_created = date
         new_capture = CaptureAlbum(annotation=capture.annotation, coordinates=capture.coordinates,
                                    date_created=capture.date_created, date_updated=capture.date_updated)
-        capture.date_created = date
         self.db_session.add(new_capture)
         await self.db_session.commit()
         await self.db_session.refresh(new_capture)
         # https://docs.sqlalchemy.org/en/14/orm/session_api.html#sqlalchemy.orm.Session.flush
-        # await self.db_session.flush()
+        await self.db_session.flush()
         return new_capture
 
     async def get_all_captures(self) -> List[CaptureAlbum]:

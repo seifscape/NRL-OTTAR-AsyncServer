@@ -5,6 +5,7 @@ from pydantic import BaseModel
 
 
 class CreateImage(BaseModel):
+    capture_id: Optional[int]
     encoded: str
     date_created: Optional[datetime]
 
@@ -22,6 +23,13 @@ class DeleteImages(BaseModel):
 
 class CreateImages(BaseModel):
     images: Union[List[CreateImage], None] = None
+
+
+class Images(BaseModel):
+    images: List[Image]
+
+    class Config:
+        orm_mode = True
 
 
 class CreateAndUpdateCapture(BaseModel):
