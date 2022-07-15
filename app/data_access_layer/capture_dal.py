@@ -32,14 +32,11 @@ class CaptureAlbumDAL:
         return capture_image_album
 
     async def create_capture(self, capture: CreateAndUpdateCapture) -> CaptureAlbum:
-        # date = datetime.datetime.now()
-        # capture.date_created = date
         new_capture = CaptureAlbum(annotation=capture.annotation, coordinates=capture.coordinates,
                                    date_created=capture.date_created, date_updated=capture.date_updated)
         self.db_session.add(new_capture)
         await self.db_session.commit()
         await self.db_session.refresh(new_capture)
-        # https://docs.sqlalchemy.org/en/14/orm/session_api.html#sqlalchemy.orm.Session.flush
         await self.db_session.flush()
         return new_capture
 
@@ -55,7 +52,7 @@ class CaptureAlbumDAL:
     async def delete_capture_by_id(self, capture_id: int):
         # https://docs.sqlalchemy.org/en/14/orm/basic_relationships.html#deleting-rows-from-the-many-to-many-table
         capture = await self.get_capture_by_id(capture_id)
-        result = await self.db_session.delete(capture)
+        await self.db_session.delete(capture)
         await self.db_session.commit()
         await self.db_session.flush()
 
